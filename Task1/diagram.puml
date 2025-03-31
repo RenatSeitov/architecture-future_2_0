@@ -1,0 +1,37 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+
+Person(user, "Пользователь", "Аналитики, операторы, врачи, менеджеры")
+
+System_Boundary(b2, "Будущее 2.0") {
+
+  Container(dataPortal, "Портал витрины данных", "Web-приложение", "Self-service доступ к аналитике и отчётам")
+  Container(apiGateway, "Data API Gateway", "GraphQL / REST", "Единая точка доступа к данным")
+  Container(dataLake, "Data Lake", "Хранилище (S3, HDFS и др.)", "Хранилище сырых и обработанных данных, разделённых по доменам")
+  Container(dwh, "Легаси DWH", "Microsoft SQL Server 2008", "Историческое хранилище с бизнес-логикой")
+  Container(biSystem, "BI-система", "Power BI / Tableau", "Создание и визуализация отчётов")
+  Container(mlServices, "ИИ-сервисы", "Python", "Модели ML/AI для медицинской аналитики")
+  Container(fintech, "Финтех-сервисы", "Go / Java", "Финансовые и кредитные сервисы")
+  Container(internalServices, "Внутренние сервисы", "Разные технологии", "HR, финансы, инвентаризация")
+  Container(integrationBus, "Интеграционная шина", "Kafka / Apache Camel", "Шина для обмена данными между системами")
+  Container(newPartners, "Партнёры (фарма, электроника)", "REST API", "Новые интегрируемые бизнесы")
+
+  user --> dataPortal : Использует
+  dataPortal --> apiGateway : Запрашивает данные
+  apiGateway --> dataLake : Чтение/запись
+  apiGateway --> dwh : Только при необходимости (устаревшие отчёты)
+  apiGateway --> biSystem : Визуализация данных
+  apiGateway --> mlServices : Доступ к данным для обучения/инференса
+  apiGateway --> fintech : Доступ к финтех-данным
+  apiGateway --> internalServices : HR, отчётность и т.п.
+
+  dataLake <--> dwh : Постепенная миграция
+  dataLake --> mlServices : Источники данных
+  dataLake --> biSystem : Отчёты и дешборды
+  integrationBus <--> dataLake : Потоки данных
+  integrationBus <--> fintech
+  integrationBus <--> internalServices
+  integrationBus <--> newPartners
+}
+@enduml
